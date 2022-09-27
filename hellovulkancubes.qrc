@@ -1,0 +1,16 @@
+<RCC>
+    <qresource prefix="/">
+        <file>resource/block.buf</file>
+        <file>resource/block.txt</file>
+        <file>resource/color.frag</file>
+        <file>resource/color.vert</file>
+        <file>resource/color_frag.spv</file>
+        <file>resource/color_vert.spv</file>
+        <file>resource/qt_logo.buf</file>
+        <file>resource/qt_logo.txt</file>
+        <file>resource/color_phong.frag</file>
+        <file>resource/color_phong.vert</file>
+        <file>resource/color_phong_frag.spv</file>
+        <file>resource/color_phong_vert.spv</file>
+    </qresource>
+</RCC>
