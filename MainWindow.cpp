@@ -49,7 +49,7 @@
 ****************************************************************************/
 
 #include "mainwindow.h"
-#include "vulkanwindow.h"
+#include "VulkanWindow.h"
 #include <QApplication>
 #include <QLabel>
 #include <QPushButton>

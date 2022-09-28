@@ -51,7 +51,7 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
-#include "vulkanwindow.h"
+#include "VulkanWindow.h"
 #include "mesh.h"
 #include "shader.h"
 #include "camera.h"
@@ -80,7 +80,7 @@ public:
     void yaw(float degrees);
     void pitch(float degrees);
     void walk(float amount);
-    void strafe(float amount);
+    void translateCamera(QPointF scrOffset);
 
     void setUseLogo(bool b);
 
@@ -134,7 +134,7 @@ private:
     QFuture<void> m_pipelinesFuture;
 
     QVector3D m_lightPos;
-    Camera m_cam;
+    Camera m_camera;
 
     QMatrix4x4 m_proj;
     int m_vpDirty = 0;

@@ -51,7 +51,7 @@
 #include <QApplication>
 #include <QLoggingCategory>
 #include "mainwindow.h"
-#include "vulkanwindow.h"
+#include "VulkanWindow.h"
 
 int main(int argc, char **argv)
 {

@@ -48,87 +48,67 @@
 **
 ****************************************************************************/
 
-#include "vulkanwindow.h"
-#include "renderer.h"
-#include <QMouseEvent>
-#include <QKeyEvent>
+#include "Camera.h"
 
-VulkanWindow::VulkanWindow(bool dbg)
-    : m_debug(dbg)
+Camera::Camera(const QVector3D &pos)
+    : m_forward(0.0f, 0.0f, -1.0f),
+      m_right(1.0f, 0.0f, 0.0f),
+      m_up(0.0f, 1.0f, 0.0f),
+      m_pos(pos),
+      m_yaw(0.0f),
+      m_pitch(0.0f)
 {
 }
 
-QVulkanWindowRenderer *VulkanWindow::createRenderer()
+static inline void clamp360(float *v)
 {
-    m_renderer = new Renderer(this, 128);
-    return m_renderer;
+    if (*v > 360.0f)
+        *v -= 360.0f;
+    if (*v < -360.0f)
+        *v += 360.0f;
 }
 
-void VulkanWindow::addNew()
+void Camera::yaw(float degrees)
 {
-    m_renderer->addNew();
+    m_yaw += degrees;
+    clamp360(&m_yaw);
+    m_yawMatrix.setToIdentity();
+    m_yawMatrix.rotate(m_yaw, 0, 1, 0);
+
+    QMatrix4x4 rotMat = m_pitchMatrix * m_yawMatrix;
+    m_forward = (QVector4D(0.0f, 0.0f, -1.0f, 0.0f) * rotMat).toVector3D();
+    m_right = (QVector4D(1.0f, 0.0f, 0.0f, 0.0f) * rotMat).toVector3D();
 }
 
-void VulkanWindow::togglePaused()
+void Camera::pitch(float degrees)
 {
-    m_renderer->setAnimating(!m_renderer->animating());
+    m_pitch += degrees;
+    clamp360(&m_pitch);
+    m_pitchMatrix.setToIdentity();
+    m_pitchMatrix.rotate(m_pitch, 1, 0, 0);
+
+    QMatrix4x4 rotMat = m_pitchMatrix * m_yawMatrix;
+    m_forward = (QVector4D(0.0f, 0.0f, -1.0f, 0.0f) * rotMat).toVector3D();
+    m_up = (QVector4D(0.0f, 1.0f, 0.0f, 0.0f) * rotMat).toVector3D();
 }
 
-void VulkanWindow::meshSwitched(bool enable)
+void Camera::walk(float amount)
 {
-    m_renderer->setUseLogo(enable);
+    m_pos[2] += amount * m_forward.z();
 }
 
-void VulkanWindow::mousePressEvent(QMouseEvent *e)
+void Camera::translate(QPointF scrOffset)
 {
-    m_pressed = true;
-    m_lastPos = e->pos();
+    auto offset = scrOffset.x() * m_speed * -1.0f;
+    m_pos[0] = (m_pos[0] + offset);
+
+    offset = scrOffset.y() * m_speed * 1.0f;
+    m_pos[1] = (m_pos[1] + offset);
 }
 
-void VulkanWindow::mouseReleaseEvent(QMouseEvent *)
+QMatrix4x4 Camera::viewMatrix() const
 {
-    m_pressed = false;
-}
-
-void VulkanWindow::mouseMoveEvent(QMouseEvent *e)
-{
-    if (!m_pressed)
-        return;
-
-    int dx = e->pos().x() - m_lastPos.x();
-    int dy = e->pos().y() - m_lastPos.y();
-
-    if (dy)
-        m_renderer->pitch(dy / 10.0f);
-
-    if (dx)
-        m_renderer->yaw(dx / 10.0f);
-
-    m_lastPos = e->pos();
-}
-
-void VulkanWindow::keyPressEvent(QKeyEvent *e)
-{
-    const float amount = e->modifiers().testFlag(Qt::ShiftModifier) ? 1.0f : 0.1f;
-    switch (e->key()) {
-    case Qt::Key_W:
-        m_renderer->walk(amount);
-        break;
-    case Qt::Key_S:
-        m_renderer->walk(-amount);
-        break;
-    case Qt::Key_A:
-        m_renderer->strafe(-amount);
-        break;
-    case Qt::Key_D:
-        m_renderer->strafe(amount);
-        break;
-    default:
-        break;
-    }
-}
-
-int VulkanWindow::instanceCount() const
-{
-    return m_renderer->instanceCount();
+    QMatrix4x4 m = m_pitchMatrix * m_yawMatrix;
+    m.translate(-m_pos);
+    return m;
 }

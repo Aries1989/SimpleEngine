@@ -48,7 +48,7 @@
 **
 ****************************************************************************/
 
-#include "renderer.h"
+#include "Renderer.h"
 #include "qrandom.h"
 #include <QVulkanFunctions>
 #include <QtConcurrentRun>
@@ -75,7 +75,7 @@ Renderer::Renderer(VulkanWindow *w, int initialCount)
     : m_window(w),
       // Have the light positioned just behind the default camera position, looking forward.
       m_lightPos(0.0f, 0.0f, 25.0f),
-      m_cam(QVector3D(0.0f, 0.0f, 20.0f)), // starting camera position
+      m_camera(QVector3D(0.0f, 0.0f, 20.0f)), // starting camera position
       m_instCount(initialCount)
 {
     m_floorModel.translate(0, -5, 0);
@@ -825,7 +825,7 @@ void Renderer::getMatrices(QMatrix4x4 *vp, QMatrix4x4 *model, QMatrix3x3 *modelN
 
     *modelNormal = model->normalMatrix();
 
-    QMatrix4x4 view = m_cam.viewMatrix();
+    QMatrix4x4 view = m_camera.viewMatrix();
     *vp = m_proj * view;
 
     *eyePos = view.inverted().column(3).toVector3D();
@@ -998,7 +998,7 @@ void Renderer::buildDrawCallsForFloor()
     VkDeviceSize vbOffset = 0;
     m_devFuncs->vkCmdBindVertexBuffers(cb, 0, 1, &m_floorVertexBuf, &vbOffset);
 
-    QMatrix4x4 mvp = m_proj * m_cam.viewMatrix() * m_floorModel;
+    QMatrix4x4 mvp = m_proj * m_camera.viewMatrix() * m_floorModel;
     m_devFuncs->vkCmdPushConstants(cb, m_floorMaterial.pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, 64, mvp.constData());
     float color[] = { 0.67f, 1.0f, 0.2f };
     m_devFuncs->vkCmdPushConstants(cb, m_floorMaterial.pipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 64, 12, color);
@@ -1015,29 +1015,30 @@ void Renderer::addNew()
 void Renderer::yaw(float degrees)
 {
     QMutexLocker locker(&m_guiMutex);
-    m_cam.yaw(degrees);
+    m_camera.yaw(degrees);
     markViewProjDirty();
 }
 
 void Renderer::pitch(float degrees)
 {
     QMutexLocker locker(&m_guiMutex);
-    m_cam.pitch(degrees);
+    m_camera.pitch(degrees);
     markViewProjDirty();
 }
 
 void Renderer::walk(float amount)
 {
     QMutexLocker locker(&m_guiMutex);
-    m_cam.walk(amount);
+    m_camera.walk(amount);
     markViewProjDirty();
 }
 
-void Renderer::strafe(float amount)
+void Renderer::translateCamera(QPointF scrOffset)
 {
     QMutexLocker locker(&m_guiMutex);
-    m_cam.strafe(amount);
+    m_camera.translate(scrOffset);
     markViewProjDirty();
+
 }
 
 void Renderer::setUseLogo(bool b)

@@ -1,21 +1,23 @@
 QT += widgets concurrent
 
+CONFIG += console
+
 HEADERS += \
-    mainwindow.h \
-    vulkanwindow.h \
-    renderer.h \
+    MainWindow.h \
+    VulkanWindow.h \
+    Renderer.h \
     mesh.h \
     shader.h \
-    camera.h
+    Camera.h
 
 SOURCES += \
     main.cpp \
-    mainwindow.cpp \
-    vulkanwindow.cpp \
-    renderer.cpp \
+    MainWindow.cpp \
+    VulkanWindow.cpp \
+    Renderer.cpp \
     mesh.cpp \
     shader.cpp \
-    camera.cpp
+    Camera.cpp
 
 RESOURCES += hellovulkancubes.qrc
 

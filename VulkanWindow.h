@@ -76,9 +76,13 @@ private:
     void mouseMoveEvent(QMouseEvent *) override;
     void keyPressEvent(QKeyEvent *) override;
 
+    void wheelEvent(QWheelEvent *e) override;
+
     bool m_debug;
     Renderer *m_renderer;
-    bool m_pressed = false;
+    bool m_rightMouseButtonPressed = false;
+    bool m_midMouseButtonPressed = false;
+    QPoint m_midButtonLastPos;
     QPoint m_lastPos;
 };
 
